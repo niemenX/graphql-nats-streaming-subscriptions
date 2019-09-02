@@ -1,0 +1,15 @@
+{
+  "compilerOptions": {
+    "target": "es5",
+    "module": "ES2015",
+    "moduleResolution": "node",
+    "rootDir": "src",
+    "outDir": "lib",
+    "removeComments": true,
+    "lib": ["es6","esnext"]
+  },
+  "exclude": [
+    "node_modules",
+    "lib"
+  ]
+}
