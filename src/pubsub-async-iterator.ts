@@ -1,5 +1,5 @@
-import { $$asyncIterator } from 'iterall'
-import { PubSubEngine } from 'graphql-subscriptions'
+import { $$asyncIterator } from "iterall";
+import { PubSubEngine } from "graphql-subscriptions";
 
 /**
  * A class for digesting PubSubEngine events via the new AsyncIterator interface.
@@ -32,79 +32,80 @@ import { PubSubEngine } from 'graphql-subscriptions'
  */
 export class PubSubAsyncIterator<T> implements AsyncIterator<T> {
 
+  parser: Function;
   constructor(pubsub: PubSubEngine, eventNames: string | string[]) {
-    this.pubsub = pubsub
-    this.pullQueue = []
-    this.pushQueue = []
-    this.listening = true
-    this.eventsArray = typeof eventNames === 'string' ? [eventNames] : eventNames
-    this.allSubscribed = this.subscribeAll()
+    this.pubsub = pubsub;
+    this.pullQueue = [];
+    this.pushQueue = [];
+    this.listening = true;
+    this.eventsArray = typeof eventNames === "string" ? [eventNames] : eventNames;
+    this.allSubscribed = this.subscribeAll();
   }
 
-  public async next() {
-    await this.allSubscribed
-    return this.listening ? this.pullValue() : this.return()
+  public async next(): Promise<IteratorResult<T>> {
+    await this.allSubscribed;
+    return this.listening ? this.pullValue() : this.return();
   }
 
-  public async return() {
-    this.emptyQueue(await this.allSubscribed)
-    return { value: undefined, done: true }
+  public async return(): Promise<IteratorResult<T>> {
+    this.emptyQueue(await this.allSubscribed);
+    return { value: undefined, done: true };
   }
 
-  public async throw(error) {
-    this.emptyQueue(await this.allSubscribed)
-    return Promise.reject(error)
+  public async throw(error: any): Promise<any> {
+    this.emptyQueue(await this.allSubscribed);
+    return Promise.reject(error);
   }
 
-  public [$$asyncIterator]() {
-    return this
+  public [$$asyncIterator](): PubSubAsyncIterator<T> {
+    return this;
   }
 
-  private pullQueue: Function[]
-  private pushQueue: any[]
-  private eventsArray: string[]
-  private allSubscribed: Promise<number[]>
-  private listening: boolean
-  private pubsub: PubSubEngine
+  private pullQueue: Function[];
+  private pushQueue: any[];
+  private eventsArray: string[];
+  private allSubscribed: Promise<number[]>;
+  private listening: boolean;
+  private pubsub: PubSubEngine;
 
-  private async pushValue(message) {
-    await this.allSubscribed
+  private async pushValue(message: any): Promise<any> {
+    await this.allSubscribed;
     if (this.pullQueue.length !== 0) {
-      this.pullQueue.shift()({ value: message, done: false })
+      this.pullQueue.shift()({ value: message, done: false });
     } else {
-      this.pushQueue.push(message)
+      this.pushQueue.push(message);
     }
   }
 
   private pullValue(): Promise<IteratorResult<any>> {
     return new Promise(resolve => {
       if (this.pushQueue.length !== 0) {
-        resolve({ value: this.pushQueue.shift(), done: false })
+        resolve({ value: this.pushQueue.shift(), done: false });
       } else {
-        this.pullQueue.push(resolve)
+        this.pullQueue.push(resolve);
       }
-    })
+    });
   }
 
-  private emptyQueue(subscriptionIds: number[]) {
+  private emptyQueue(subscriptionIds: number[]): void {
     if (this.listening) {
-      this.listening = false
-      this.unsubscribeAll(subscriptionIds)
-      this.pullQueue.forEach(resolve => resolve({ value: undefined, done: true }))
-      this.pullQueue.length = 0
-      this.pushQueue.length = 0
+      this.listening = false;
+      this.unsubscribeAll(subscriptionIds);
+      this.pullQueue.forEach(resolve => resolve({ value: undefined, done: true }));
+      this.pullQueue.length = 0;
+      this.pushQueue.length = 0;
     }
   }
 
-  private subscribeAll() {
+  private subscribeAll(): Promise<number[]> {
     return Promise.all(this.eventsArray.map(
       eventName => this.pubsub.subscribe(eventName, this.pushValue.bind(this), {}),
-    ))
+    ));
   }
 
-  private unsubscribeAll(subscriptionIds: number[]) {
+  private unsubscribeAll(subscriptionIds: number[]): void {
     for (const subscriptionId of subscriptionIds) {
-      this.pubsub.unsubscribe(subscriptionId)
+      this.pubsub.unsubscribe(subscriptionId);
     }
   }
 }
