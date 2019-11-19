@@ -1,6 +1,6 @@
 {
   "name": "@niemen/graphql-nats-streaming-subscriptions",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "GraphQL subscriptions over NATS Streaming",
   "author": "niemen",
   "license": "MIT",
